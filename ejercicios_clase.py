@@ -19,6 +19,79 @@ import csv
 import re
 
 
+def contar_lineas(archivo):
+    '''Cuenta la cantidad de lineas de un archivo
+
+    @archivo Archivo donde se contaran las lineas
+    (puede que no funcione correctamente en archivos .csv)
+    '''
+    contador = 0
+    with open(archivo, 'r') as fi:
+        contador = len(fi.readlines())
+    print("Hay", contador, "lineas en el texto")
+    return contador
+
+
+def generador_inventario(archivo, item):
+    '''Generador de inventarios con formato:
+    Elemento - Stock
+
+    @param erchivo: Archivo idealmente .csv donde se guardara la informacion\n
+    @param item: String y nombre del elemento que servira para armar el encabezado 
+    '''
+    csvfile = open(archivo, 'w', newline='')
+    header = [item , 'stock']
+    writer = csv.DictWriter(csvfile, fieldnames=header)
+    writer.writeheader()
+    elementos_agregados = []
+    while True:
+        elemento = input('Introduzca el/la {}:\n'.format(item))
+        if elemento == 'FIN':
+            input("Cerrando programa")
+            break
+        if elemento in elementos_agregados:
+            print('Este/a {} ya ha sido anadido/a al inventario'.format(item))
+            continue
+        else:
+            elementos_agregados.append(elemento)
+
+        stock = input('Introduzca el stock disponible:\n')
+        
+        writer.writerow({item: elemento, 'stock': stock})
+
+    csvfile.close   
+
+
+def buscador_inventario(archivo, item):
+    '''Buscador de items dentro de un inventario con formato:
+    Elemento - Stock
+
+    @param archivo: Archivo idealmente .csv donde se buscara el elemento\n
+    @param item: String y nombre del elemento que se buscara
+
+    IMPORTANTE: Es necesario que el @param item sea obligatoriamente igual que 
+    su correspondiente nombre en el encabezado para que no halla errores, en caso 
+    de confusion, utilice esta funcion en conjunto con la correspondiente para generar
+    inventarios proveida en este archivo
+    '''
+    csvfile = open(archivo, 'r', newline='')
+    data = list(csv.DictReader(csvfile))
+
+    while True:
+        elemento = input('Introduzca el/la {} que busca:\n'.format(item))
+        if elemento == 'FIN':
+            break
+        elemento_encontrado = [diccionario for diccionario in data if diccionario[item] == elemento]
+        if len(elemento_encontrado) > 0:
+            print('Se ha encontrado el/la {} que busca'.format(item))
+            print('{}: {}'.format(elemento_encontrado[0][item], elemento_encontrado[0]['stock']))
+        else:
+            print('Elemento no encontrado')
+            print('Por favor, intente nuevamente')
+                
+    csvfile.close     
+
+
 def ej1():
     # Ejercicios con archivos txt
     cantidad_lineas = 0
@@ -35,6 +108,8 @@ def ej1():
     y cumpla el objetivo especificado, retornando la cantidad
     de líneas encontradas.
     '''
+    #cantidad_lineas = 
+    contar_lineas('notas.txt')
 
 
 def ej2():
@@ -59,6 +134,16 @@ def ej2():
     # fo = open(.......)
 
     # Recuerde cerrar los archivos al final ;)
+    fi = open('notas.txt', 'r')
+    fo = open('escritura.txt', 'w')
+
+    Lineas = fi.readlines()
+    for linea in Lineas:
+        fo.write(linea)
+
+
+    fi.close()
+    fo.close()
 
 
 def ej3():
@@ -66,11 +151,22 @@ def ej3():
     archivo = 'propiedades.csv'
     '''
     Realice un programa que abra el archivo CSV "propiedades.csv"
-    en modo lectura. Recorrar dicho archivo y contar
+    en modo lectura. Recorrer dicho archivo y contar
     la cantidad de departamentos de 2 ambientes y la cantidad
     de departamentos de 3 ambientes disponibles.
     Al finalizar el proceso, imprima en pantalla los resultados.
     '''
+    with open('propiedades.csv') as csvfile:
+        ambientes_2 = 0
+        ambientes_3 = 0
+        data = list(csv.DictReader(csvfile)) 
+        for i in data:
+            if i.get('ambientes') == '2':
+                ambientes_2 += 1
+            if i.get('ambientes') == '3':
+                ambientes_3 += 1
+        print("Hay {} departamentos de 2 ambientes".format(ambientes_2))
+        print("Hay {} departamentos de 3 ambientes".format(ambientes_3))    
 
 
 def ej4():
@@ -97,16 +193,16 @@ def ej4():
 
     Se debe terminar ese segundo bucle cuando se ingrese la palabra FIN
     '''
-
     # 1) Bucle 1
     # Generar y completar el diccionario con las frutas y cantidades
     # ingresadas por consola hasta ingresar la palabra "FIN"
-
+    generador_inventario('inventario.csv', 'fruta')
     # 2) Bucle 2
     # Ingresar por consola la fruta que desea conocer en stock
     # Finalizar cuando la fruta ingresada sea igual a "FIN"
+    buscador_inventario('inventario.csv', 'fruta')
 
-
+    
 def ej5():
     # Ejercicios con archivos CSV
     inventario = {}
@@ -140,11 +236,13 @@ def ej5():
     # Bucle....
 
     # writer.writerow({'Fruta Verdura': ....., 'Cantidad': ....})
+    generador_inventario('inventarioFoV.csv', 'fruta/verdura')
+
 
 
 if __name__ == '__main__':
     print("Bienvenidos a otra clase de Inove con Python")
-    ej1()
+    #ej1()
     #ej2()
     #ej3()
     #ej4()
